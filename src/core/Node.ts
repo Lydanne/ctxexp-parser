@@ -8,7 +8,7 @@ export class AccessNode {
     this.col = col;
   }
 }
-type Arg = AccessNode | NumNode | StrNode;
+type Arg = AccessNode | DataNode<any>;
 export class CallNode {
   col: number;
   name: string;
@@ -19,18 +19,10 @@ export class CallNode {
     this.col = col;
   }
 }
-class NumNode {
+export class DataNode<T> {
   col: number;
-  value: number;
-  constructor(value, col = 0) {
-    this.value = value;
-    this.col = col;
-  }
-}
-class StrNode {
-  col: number;
-  value: string;
-  constructor(value, col = 0) {
+  value: T;
+  constructor(value: T, col = 0) {
     this.value = value;
     this.col = col;
   }

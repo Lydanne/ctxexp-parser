@@ -151,4 +151,27 @@ describe("ctxexpParser", () => {
 
     expect(() => new CtxexpParser(ctx, exp).exec()).toThrowError();
   });
+
+  it("should input fun base params", () => {
+    const exp = `$.fn(1,"2")`;
+    const ctx = {
+      fn(int, str) {
+        return int + str;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe("12");
+  });
+
+  it("should input fun base params 1", () => {
+    const exp = `$.fn($.a,$.a)`;
+    const ctx = {
+      a: 1,
+      fn(int, int2) {
+        return int + int2;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(2);
+  });
 });

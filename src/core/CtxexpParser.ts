@@ -1,7 +1,7 @@
 import { Lexer } from "./Lexer";
 import { Token, TokenType } from "./Token";
 import { Exception, ErrorCode } from "../helper/Exception";
-import { CallNode, AccessNode } from "./Node";
+import { CallNode, AccessNode, DataNode } from "./Node";
 
 export class CtxexpParser {
   tokens: Token[];
@@ -46,6 +46,10 @@ export class CtxexpParser {
         const res = dfs(node.prop, ctx[node.name]);
         return res;
       }
+
+      if (node instanceof DataNode) {
+        return node.value;
+      }
     };
 
     return dfs(ast, $);
@@ -77,9 +81,7 @@ export class CtxexpParser {
         return null;
       }
       if (token.type === TokenType.ID_OBJ && prevToken === null) {
-        const ast = new AccessNode(token.text, token.col);
-        ast.prop = access();
-        return ast;
+        return new AccessNode(token.text, token.col, access());
       }
 
       if (
@@ -96,15 +98,29 @@ export class CtxexpParser {
         return new CallNode(token.text, token.col, access());
       }
 
-      if (
-        token.type === TokenType.ID_OBJ &&
-        prevToken.type === TokenType.OPE_CALL_OPEN
-      ) {
+      if (prevToken.type === TokenType.OPE_CALL_OPEN) {
         const args = [];
-        args.push(new AccessNode(token.text, token.col, access()));
-        walk();
-        while ((prevToken.type as TokenType) === TokenType.OPE_ARG_SPT) {
+        if (token.type === TokenType.DT_NUM) {
+          args.push(new DataNode(Number(token.text), token.col));
+          walk();
+        } else if (token.type === TokenType.OPE_STR_OPEN) {
+          walk();
+          args.push(new DataNode(String(token.text), token.col));
+        } else {
           args.push(new AccessNode(token.text, token.col, access()));
+        }
+        walk();
+        while ((prevToken?.type as TokenType) === TokenType.OPE_ARG_SPT) {
+          if (token.type === TokenType.DT_NUM) {
+            args.push(new DataNode(Number(token.text), token.col));
+            walk();
+          } else if (token.type === TokenType.OPE_STR_OPEN) {
+            walk();
+            args.push(new DataNode(String(token.text), token.col));
+          } else {
+            args.push(new AccessNode(token.text, token.col, access()));
+          }
+          // walk();
         }
         return args;
       }
