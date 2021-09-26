@@ -3,9 +3,6 @@ import { Lexer } from "../../src/core/Lexer";
 describe("ctxexpParser", () => {
   it("should parser return tokens", () => {
     const exp = `$.foo[0].fn[0]("hells",$.a[0],1,222,$.b,$.fn(),"fff")`;
-    const exp4 = `$.foo.fn(()=>0)`;
-    const exp5 = `$.foo.fn((o)=>o.a)`;
-    const exp6 = `$.foo.fn((n)=>$.add(1, n))`;
 
     const lexer = new Lexer(exp);
 

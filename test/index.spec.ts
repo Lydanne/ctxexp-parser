@@ -3,7 +3,7 @@ import { CtxexpParser, AccessNode, CallNode } from "../src/core/CtxexpParser";
 describe("ctxexpParser", () => {
   it("should return lovelove", () => {
     const exp = `$.foo.fn($.foo.boo,$.foo.boo)`;
-    const exp1 = `$.foo.boo`;
+
     const ctx = {
       foo: {
         boo: "love",
