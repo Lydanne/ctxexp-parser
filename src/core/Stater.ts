@@ -1,4 +1,7 @@
 import { Token, TokenType } from "./Token";
+import { Exception } from "../helper/Exception";
+
+const isProperty = (c) => /\w/.test(c);
 
 export function createStater(exp) {
   let tokenString = "";
@@ -13,7 +16,6 @@ export function createStater(exp) {
   }
   index++;
   emit();
-  emit(TokenType.EOF);
 
   return tokens;
 
@@ -32,17 +34,21 @@ export function createStater(exp) {
       emit();
       return O2;
     }
+
+    throw new Exception(index, `must be '.', not '${c}'`);
   }
 
   function O2(c: string) {
-    if (/\w/.test(c)) {
+    if (isProperty(c)) {
       tokenString = c;
       return S1;
     }
+
+    throw new Exception(index, `must be work, not '${c}'`);
   }
 
   function S1(c: string) {
-    if (/[a-z]/i.test(c)) {
+    if (isProperty(c)) {
       tokenString += c;
       return S1;
     }
@@ -76,7 +82,7 @@ export function createStater(exp) {
       emit();
       return O3;
     }
-    return end;
+    throw new Exception(index, `must be '.' or '(' or '[', not '${c}'`);
   }
 
   function O3(c: string) {
@@ -84,7 +90,8 @@ export function createStater(exp) {
       tokenString = c;
       return N1;
     }
-    return end;
+
+    throw new Exception(index, `must be int, not '${c}'`);
   }
 
   function N1(c: string) {
@@ -98,6 +105,8 @@ export function createStater(exp) {
       emit();
       return O4;
     }
+
+    throw new Exception(index, `must be int or ']', not '${c}'`);
   }
 
   function O4(c: string) {
@@ -107,7 +116,7 @@ export function createStater(exp) {
       return O2;
     }
 
-    if (/[a-z]/i.test(c)) {
+    if (isProperty(c)) {
       tokenString = c;
       return S1;
     }
@@ -123,6 +132,11 @@ export function createStater(exp) {
       emit();
       return O5;
     }
+
+    throw new Exception(
+      index,
+      `must be int or '.' or word or ',' or '(', not '${c}'`
+    );
   }
 
   function O5(c: string) {
@@ -146,7 +160,10 @@ export function createStater(exp) {
       return N2;
     }
 
-    return end;
+    throw new Exception(
+      index,
+      `must be int or '$' or ')' or word or string open, not '${c}'`
+    );
   }
 
   function N2(c: string) {
@@ -167,12 +184,21 @@ export function createStater(exp) {
       emit();
       return O7;
     }
+
+    throw new Exception(index, `must be int or ',' or ')', not '${c}'`);
   }
 
   function O8(c: string) {
     if (/[^"]/i.test(c)) {
       tokenString = c;
       return S2;
+    }
+
+    if (c === '"') {
+      emit(TokenType.DT_STR);
+      tokenString = c;
+      emit(TokenType.OPE_STR_CLOSE);
+      return O9;
     }
   }
 
@@ -202,6 +228,8 @@ export function createStater(exp) {
       emit();
       return O7;
     }
+
+    throw new Exception(index, `must be ')' or ',', not '${c}'`);
   }
 
   function O6(c: string) {
@@ -215,7 +243,7 @@ export function createStater(exp) {
       emit();
       return O7;
     }
-    return end;
+    throw new Exception(index, `must be ')' or ',', not '${c}'`);
   }
 
   function O7(c: string) {
@@ -234,7 +262,8 @@ export function createStater(exp) {
       tokenString = c;
       return N2;
     }
-    return end;
+
+    throw new Exception(index, `must be '$' or '"' or int, not '${c}'`);
   }
 
   function end(c: string) {

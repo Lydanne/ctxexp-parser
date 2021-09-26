@@ -50,4 +50,34 @@ describe("ctxexpParser", () => {
       { text: ")", type: ")", col: 52 },
     ]);
   });
+
+  it("should return 3", () => {
+    const exp = "  $.test";
+    const lexer = new Lexer(exp);
+    expect(lexer.toTokens()).toHaveLength(3);
+  });
+
+  it("should throw CtxexpParserError(1): In the 1 column, must be '.', not 'x'", () => {
+    const exp = "$x.test";
+    const lexer = new Lexer(exp);
+    expect(() => lexer.toTokens()).toThrowError(
+      "CtxexpParserError(1): In the 1 column, must be '.', not 'x'"
+    );
+  });
+
+  it("should throw error CtxexpParserError(1): In the 4 column, must be '.' or '(' or '[', not ' '", () => {
+    const exp = "$.fn ()";
+    const lexer = new Lexer(exp);
+    expect(() => lexer.toTokens()).toThrowError(
+      "CtxexpParserError(1): In the 4 column, must be '.' or '(' or '[', not ' '"
+    );
+  });
+
+  it("should throw error", () => {
+    expect(() => new Lexer(`$.a[x]`).toTokens()).toThrowError();
+    expect(() => new Lexer(`$.a [0]`).toTokens()).toThrowError();
+    expect(() => new Lexer(`$.a(x)`).toTokens()).toThrowError();
+    expect(() => new Lexer(`$.a($.a, $.a)`).toTokens()).toThrowError();
+    expect(() => new Lexer(`$.a().a`).toTokens()).toThrowError(); // TODO: 后期要支持
+  });
 });

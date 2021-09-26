@@ -1,5 +1,7 @@
 import { Lexer } from "./Lexer";
 import { Token, TokenType } from "./Token";
+import { Exception, ErrorCode } from "../helper/Exception";
+import { CallNode, AccessNode } from "./Node";
 
 export class CtxexpParser {
   tokens: Token[];
@@ -22,6 +24,13 @@ export class CtxexpParser {
           const res = dfs(argNode, $);
           args.push(res);
         }
+        if (ctx === undefined || typeof ctx[node.name] !== "function") {
+          throw new Exception(
+            node.col,
+            `No method exists ${node.name}`,
+            ErrorCode.CALL
+          );
+        }
         const res = ctx[node.name](...args);
         return res;
       }
@@ -30,6 +39,9 @@ export class CtxexpParser {
         if (node.name === "$") {
           const res = dfs(node.prop, $);
           return res;
+        }
+        if (ctx === undefined) {
+          throw new Exception(node.col, `ctx not undefined`, ErrorCode.READ);
         }
         const res = dfs(node.prop, ctx[node.name]);
         return res;
@@ -48,9 +60,6 @@ export class CtxexpParser {
     let token: Token = null;
     let prevToken: Token = null;
     let ast = access();
-    let stack = [];
-
-    console.log(JSON.stringify(ast, null));
 
     return ast;
 
@@ -68,7 +77,7 @@ export class CtxexpParser {
         return null;
       }
       if (token.type === TokenType.ID_OBJ && prevToken === null) {
-        const ast = new AccessNode(token.text);
+        const ast = new AccessNode(token.text, token.col);
         ast.prop = access();
         return ast;
       }
@@ -77,14 +86,14 @@ export class CtxexpParser {
         token.type === TokenType.ID_OBJ &&
         prevToken.type === TokenType.OPE_POI
       ) {
-        return new AccessNode(token.text, access());
+        return new AccessNode(token.text, token.col, access());
       }
 
       if (
         token.type === TokenType.ID_FN &&
         prevToken.type === TokenType.OPE_POI
       ) {
-        return new CallNode(token.text, access());
+        return new CallNode(token.text, token.col, access());
       }
 
       if (
@@ -92,10 +101,10 @@ export class CtxexpParser {
         prevToken.type === TokenType.OPE_CALL_OPEN
       ) {
         const args = [];
-        args.push(new AccessNode(token.text, access()));
+        args.push(new AccessNode(token.text, token.col, access()));
         walk();
         while ((prevToken.type as TokenType) === TokenType.OPE_ARG_SPT) {
-          args.push(new AccessNode(token.text, access()));
+          args.push(new AccessNode(token.text, token.col, access()));
         }
         return args;
       }
@@ -103,48 +112,4 @@ export class CtxexpParser {
       return access();
     }
   }
-}
-export class AccessNode {
-  name: string;
-  prop: AccessNode | CallNode;
-  constructor(name, prop = null) {
-    this.name = name;
-    this.prop = prop;
-  }
-}
-type Arg = AccessNode | NumNode | StrNode;
-export class CallNode {
-  name: string;
-  args: Arg[];
-  constructor(name, args) {
-    this.name = name;
-    this.args = args;
-  }
-}
-class NumNode {
-  value: number;
-  constructor(value) {
-    this.value = value;
-  }
-}
-class StrNode {
-  value: string;
-  constructor(value) {
-    this.value = value;
-  }
-}
-const args = [
-  (obj) => ({
-    type: "exp_fn",
-    text: "call",
-    args: [{ type: "var", text: "obj" }],
-    return: {
-      type: "var",
-      text: "obj",
-      next: {},
-    },
-  }),
-];
-function expFn(cb) {
-  return cb();
 }
