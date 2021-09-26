@@ -1,6 +1,6 @@
 {
   "name": "ctxexp-parser",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "libs/ctxexp-parser.cjs.js",
   "module": "libs/ctxexp-parser.esm.js",
   "types": "./types/index.d.ts",
@@ -25,6 +25,14 @@
     "tslib": "^2.3.1",
     "typescript": "^4.4.3"
   },
+  "keywords": [
+    "dynamic",
+    "$",
+    "expression",
+    "lang",
+    "parser",
+    "context"
+  ],
   "scripts": {
     "test": "jest",
     "build": "rollup -c",
