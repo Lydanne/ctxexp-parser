@@ -1,0 +1,56 @@
+import { Lexer } from "../../src/core/Lexer";
+
+describe("ctxexpParser", () => {
+  it("should parser return tokens", () => {
+    const exp = `$.foo[0].fn[0]("hells",$.a[0],1,222,$.b,$.fn(),"fff")`;
+    const exp4 = `$.foo.fn(()=>0)`;
+    const exp5 = `$.foo.fn((o)=>o.a)`;
+    const exp6 = `$.foo.fn((n)=>$.add(1, n))`;
+
+    const lexer = new Lexer(exp);
+
+    expect(lexer.toTokens()).toEqual([
+      { text: "$", type: "id_obj", col: 0 },
+      { text: ".", type: ".", col: 1 },
+      { text: "foo", type: "id_obj", col: 2 },
+      { text: "[", type: "[", col: 5 },
+      { text: "0", type: "id_arr", col: 7 },
+      { text: "]", type: "]", col: 7 },
+      { text: ".", type: ".", col: 8 },
+      { text: "fn", type: "id_obj", col: 9 },
+      { text: "[", type: "[", col: 11 },
+      { text: "0", type: "id_arr", col: 13 },
+      { text: "]", type: "]", col: 13 },
+      { text: "(", type: "(", col: 14 },
+      { text: '"', type: "ope_str_open", col: 15 },
+      { text: "hells", type: "dt_str", col: 16 },
+      { text: '"', type: "ope_str_close", col: 21 },
+      { text: ",", type: ",", col: 22 },
+      { text: "$", type: "id_obj", col: 23 },
+      { text: ".", type: ".", col: 24 },
+      { text: "a", type: "id_obj", col: 26 },
+      { text: "[", type: "[", col: 26 },
+      { text: "0", type: "id_arr", col: 28 },
+      { text: "]", type: "]", col: 28 },
+      { text: ",", type: ",", col: 29 },
+      { text: "1", type: "dt_num", col: 31 },
+      { text: ",", type: ",", col: 31 },
+      { text: "222", type: "dt_num", col: 32 },
+      { text: ",", type: ",", col: 35 },
+      { text: "$", type: "id_obj", col: 36 },
+      { text: ".", type: ".", col: 37 },
+      { text: "b", type: "id_obj", col: 39 },
+      { text: ",", type: ",", col: 39 },
+      { text: "$", type: "id_obj", col: 40 },
+      { text: ".", type: ".", col: 41 },
+      { text: "fn", type: "id_fn", col: 42 },
+      { text: "(", type: "(", col: 44 },
+      { text: ")", type: ")", col: 45 },
+      { text: ",", type: ",", col: 46 },
+      { text: '"', type: "ope_str_open", col: 47 },
+      { text: "fff", type: "dt_str", col: 48 },
+      { text: '"', type: "ope_str_close", col: 51 },
+      { text: ")", type: ")", col: 52 },
+    ]);
+  });
+});
