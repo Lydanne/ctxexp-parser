@@ -163,15 +163,111 @@ describe("ctxexpParser", () => {
     expect(new CtxexpParser(ctx, exp).exec()).toBe("12");
   });
 
-  it("should input fun base params 1", () => {
-    const exp = `$.fn($.a,$.a)`;
+  it("should input fun multi param 1", () => {
+    const exp = `$.fn($.a,$.a,$.a)`;
     const ctx = {
       a: 1,
-      fn(int, int2) {
-        return int + int2;
+      fn(n1, n2, n3) {
+        return n1 + n2 + n3;
       },
     };
 
-    expect(new CtxexpParser(ctx, exp).exec()).toBe(2);
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(3);
+  });
+
+  it("should input fun multi param 2", () => {
+    const exp = `$.fn($.a,"1",$.a)`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2 + n3;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe("111");
+  });
+
+  it("should input fun multi param 3", () => {
+    const exp = `$.fn("1","1",$.a)`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2 + n3;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe("111");
+  });
+
+  it("should input fun multi param 4", () => {
+    const exp = `$.fn(1,"1",$.a)`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2 + n3;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe("111");
+  });
+
+  it("should input fun multi param 5", () => {
+    const exp = `$.fn(1,1,$.a)`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2 + n3;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(3);
+  });
+
+  it("should input fun multi param 6", () => {
+    const exp = `$.fn(1,1,1)`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2 + n3;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(3);
+  });
+
+  it("should input fun multi param 7", () => {
+    const exp = `$.fn("1","1","1")`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2 + n3;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe("111");
+  });
+
+  it("should input fun multi param 8", () => {
+    const exp = `$.fn("1","1")`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe("11");
+  });
+
+  it("should input fun multi param 9", () => {
+    const exp = `$.fn("1",1)`;
+    const ctx = {
+      a: 1,
+      fn(n1, n2, n3) {
+        return n1 + n2;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe("11");
   });
 });

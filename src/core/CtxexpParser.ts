@@ -106,6 +106,8 @@ export class CtxexpParser {
         } else if (token.type === TokenType.OPE_STR_OPEN) {
           walk();
           args.push(new DataNode(String(token.text), token.col));
+          walk();
+          walk();
         } else {
           args.push(new AccessNode(token.text, token.col, access()));
         }
@@ -117,10 +119,12 @@ export class CtxexpParser {
           } else if (token.type === TokenType.OPE_STR_OPEN) {
             walk();
             args.push(new DataNode(String(token.text), token.col));
+            walk();
+            walk();
           } else {
             args.push(new AccessNode(token.text, token.col, access()));
           }
-          // walk();
+          walk();
         }
         return args;
       }
