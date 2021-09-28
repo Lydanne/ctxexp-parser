@@ -270,4 +270,28 @@ describe("ctxexpParser", () => {
 
     expect(new CtxexpParser(ctx, exp).exec()).toBe("11");
   });
+
+  it("should input any char", () => {
+    const exp = '$.fn("1\\"1")';
+    const ctx = {
+      fn(n1) {
+        return n1;
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe('1"1');
+  });
+
+  it("should passing in a JSON", () => {
+    const exp = "$.fn($.JSON.parse(\"{\\\"test\\\":2}\"))"; // 刻意模拟表达式在JSON的情况下
+    const ctx = {
+      JSON,
+      fn(obj) {
+        return obj.test;
+      },
+    };
+    console.log(exp);
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(2);
+  });
 });

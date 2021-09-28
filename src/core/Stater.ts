@@ -189,7 +189,7 @@ export function createStater(exp) {
   }
 
   function O8(c: string) {
-    if (/[^"]/i.test(c)) {
+    if (c !== '"') {
       tokenString = c;
       return S2;
     }
@@ -203,7 +203,12 @@ export function createStater(exp) {
   }
 
   function S2(c: string) {
-    if (/[^"]/i.test(c)) {
+    if (c === "\\") {
+      // 特殊字符优先处理
+      return S3;
+    }
+
+    if (c !== '"') {
       tokenString += c;
       return S2;
     }
@@ -214,6 +219,11 @@ export function createStater(exp) {
       emit(TokenType.OPE_STR_CLOSE);
       return O9;
     }
+  }
+
+  function S3(c: string) {
+    tokenString += c;
+    return S2;
   }
 
   function O9(c: string) {
