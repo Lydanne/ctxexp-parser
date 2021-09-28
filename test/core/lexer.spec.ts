@@ -77,6 +77,5 @@ CtxexpParserError(1): must be '.' or '(' or '[', not ' '`);
     expect(() => new Lexer(`$.a [0]`).toTokens()).toThrowError();
     expect(() => new Lexer(`$.a(x)`).toTokens()).toThrowError();
     expect(() => new Lexer(`$.a($.a, $.a)`).toTokens()).toThrowError();
-    expect(() => new Lexer(`$.a().a`).toTokens()).toThrowError(); // TODO: 后期要支持
   });
 });

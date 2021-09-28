@@ -13,10 +13,12 @@ export class CallNode {
   col: number;
   name: string;
   args: Arg[];
-  constructor(name, col = 0, args = []) {
+  prop: Node;
+  constructor(name, col = 0, args = [], prop = null) {
     this.name = name;
     this.args = args;
     this.col = col;
+    this.prop = prop;
   }
 }
 export class DataNode<T> {
@@ -27,3 +29,5 @@ export class DataNode<T> {
     this.col = col;
   }
 }
+
+type Node = AccessNode | CallNode | DataNode<any>;

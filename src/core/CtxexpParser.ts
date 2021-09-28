@@ -13,7 +13,7 @@ export class CtxexpParser {
 
   execAst(ast) {
     const $ = this.ctx;
-    const dfs = (node, ctx) => {
+    const deepExecAst = (node, ctx) => {
       if (!node || Object.keys(node).length === 0) {
         return ctx;
       }
@@ -21,7 +21,7 @@ export class CtxexpParser {
         const args = [];
         for (let i = 0; i < node.args.length; i++) {
           const argNode = node.args[i];
-          const res = dfs(argNode, $);
+          const res = deepExecAst(argNode, $);
           args.push(res);
         }
         if (ctx === undefined || typeof ctx[node.name] !== "function") {
@@ -32,18 +32,18 @@ export class CtxexpParser {
           );
         }
         const res = ctx[node.name](...args);
-        return res;
+        return deepExecAst(node.prop, res);
       }
 
       if (node instanceof AccessNode) {
         if (node.name === "$") {
-          const res = dfs(node.prop, $);
+          const res = deepExecAst(node.prop, $);
           return res;
         }
         if (ctx === undefined) {
           throw new Exception(node.col, `ctx not undefined`, ErrorCode.READ);
         }
-        const res = dfs(node.prop, ctx[node.name]);
+        const res = deepExecAst(node.prop, ctx[node.name]);
         return res;
       }
 
@@ -52,7 +52,7 @@ export class CtxexpParser {
       }
     };
 
-    return dfs(ast, $);
+    return deepExecAst(ast, $);
   }
   exec() {
     return this.execAst(this.toAst());
@@ -95,7 +95,7 @@ export class CtxexpParser {
         token.type === TokenType.ID_FN &&
         prevToken.type === TokenType.OPE_POI
       ) {
-        return new CallNode(token.text, token.col, access());
+        return new CallNode(token.text, token.col, access(), access());
       }
 
       if (prevToken.type === TokenType.OPE_CALL_OPEN) {

@@ -155,6 +155,7 @@ export function createStater(exp) {
       emit(TokenType.OPE_STR_OPEN);
       return O8;
     }
+
     if (/[0-9]/.test(c)) {
       tokenString = c;
       return N2;
@@ -253,6 +254,13 @@ export function createStater(exp) {
       emit();
       return O7;
     }
+
+    if(c === '.'){
+      tokenString = c;
+      emit();
+      return O2;
+    }
+
     throw new Exception(index, `must be ')' or ',', not '${c}'`);
   }
 
