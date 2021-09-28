@@ -7,6 +7,28 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+class Exception extends Error {
+    message;
+    col;
+    code;
+    static exp;
+    constructor(col, message, code = exports.ErrorCode.SYNTAX) {
+        super();
+        this.col = col;
+        this.code = code;
+        this.message = `\n${this.toCodeLocTip()}\nCtxexpParserError(${code}): ${message}\n`;
+    }
+    toCodeLocTip() {
+        return `    ${Exception.exp}\n    ${' '.repeat(this.col)}^`;
+    }
+}
+exports.ErrorCode = void 0;
+(function (ErrorCode) {
+    ErrorCode[ErrorCode["SYNTAX"] = 1] = "SYNTAX";
+    ErrorCode[ErrorCode["CALL"] = 2] = "CALL";
+    ErrorCode[ErrorCode["READ"] = 3] = "READ";
+})(exports.ErrorCode || (exports.ErrorCode = {}));
+
 function mapperEnum(enumParams) {
     for (const key in enumParams) {
         Object.defineProperty(enumParams, enumParams[key], {
@@ -44,24 +66,6 @@ class Token {
         this.col = col;
     }
 }
-
-class Exception extends Error {
-    message;
-    col;
-    code;
-    constructor(col, message, code = exports.ErrorCode.SYNTAX) {
-        super();
-        this.message = `CtxexpParserError(${code}): In the ${col} column, ${message}`;
-        this.code = code;
-        this.col = col;
-    }
-}
-exports.ErrorCode = void 0;
-(function (ErrorCode) {
-    ErrorCode[ErrorCode["SYNTAX"] = 1] = "SYNTAX";
-    ErrorCode[ErrorCode["CALL"] = 2] = "CALL";
-    ErrorCode[ErrorCode["READ"] = 3] = "READ";
-})(exports.ErrorCode || (exports.ErrorCode = {}));
 
 const isProperty = (c) => /\w/.test(c);
 function createStater(exp) {
@@ -221,7 +225,7 @@ function createStater(exp) {
         throw new Exception(index, `must be int or ',' or ')', not '${c}'`);
     }
     function O8(c) {
-        if (/[^"]/i.test(c)) {
+        if (c !== '"') {
             tokenString = c;
             return S2;
         }
@@ -233,7 +237,11 @@ function createStater(exp) {
         }
     }
     function S2(c) {
-        if (/[^"]/i.test(c)) {
+        if (c === "\\") {
+            // 特殊字符优先处理
+            return S3;
+        }
+        if (c !== '"') {
             tokenString += c;
             return S2;
         }
@@ -243,6 +251,10 @@ function createStater(exp) {
             emit(TokenType.OPE_STR_CLOSE);
             return O9;
         }
+    }
+    function S3(c) {
+        tokenString += c;
+        return S2;
     }
     function O9(c) {
         if (c === ")") {
@@ -298,6 +310,7 @@ function createStater(exp) {
 class Lexer {
     exp;
     constructor(exp) {
+        Exception.exp = exp;
         this.exp = exp;
     }
     toTokens() {
