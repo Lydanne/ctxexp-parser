@@ -9,12 +9,14 @@ export declare class CallNode {
     col: number;
     name: string;
     args: Arg[];
-    constructor(name: any, col?: number, args?: any[]);
+    prop: Node;
+    constructor(name: any, col?: number, args?: any[], prop?: any);
 }
 export declare class DataNode<T> {
     col: number;
     value: T;
     constructor(value: T, col?: number);
 }
+declare type Node = AccessNode | CallNode | DataNode<any>;
 export {};
 //# sourceMappingURL=Node.d.ts.map

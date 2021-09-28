@@ -280,6 +280,11 @@ function createStater(exp) {
             emit();
             return O7;
         }
+        if (c === '.') {
+            tokenString = c;
+            emit();
+            return O2;
+        }
         throw new Exception(index, `must be ')' or ',', not '${c}'`);
     }
     function O7(c) {
@@ -332,10 +337,12 @@ class CallNode {
     col;
     name;
     args;
-    constructor(name, col = 0, args = []) {
+    prop;
+    constructor(name, col = 0, args = [], prop = null) {
         this.name = name;
         this.args = args;
         this.col = col;
+        this.prop = prop;
     }
 }
 class DataNode {
@@ -356,7 +363,7 @@ class CtxexpParser {
     }
     execAst(ast) {
         const $ = this.ctx;
-        const dfs = (node, ctx) => {
+        const deepExecAst = (node, ctx) => {
             if (!node || Object.keys(node).length === 0) {
                 return ctx;
             }
@@ -364,31 +371,31 @@ class CtxexpParser {
                 const args = [];
                 for (let i = 0; i < node.args.length; i++) {
                     const argNode = node.args[i];
-                    const res = dfs(argNode, $);
+                    const res = deepExecAst(argNode, $);
                     args.push(res);
                 }
                 if (ctx === undefined || typeof ctx[node.name] !== "function") {
                     throw new Exception(node.col, `No method exists ${node.name}`, exports.ErrorCode.CALL);
                 }
                 const res = ctx[node.name](...args);
-                return res;
+                return deepExecAst(node.prop, res);
             }
             if (node instanceof AccessNode) {
                 if (node.name === "$") {
-                    const res = dfs(node.prop, $);
+                    const res = deepExecAst(node.prop, $);
                     return res;
                 }
                 if (ctx === undefined) {
                     throw new Exception(node.col, `ctx not undefined`, exports.ErrorCode.READ);
                 }
-                const res = dfs(node.prop, ctx[node.name]);
+                const res = deepExecAst(node.prop, ctx[node.name]);
                 return res;
             }
             if (node instanceof DataNode) {
                 return node.value;
             }
         };
-        return dfs(ast, $);
+        return deepExecAst(ast, $);
     }
     exec() {
         return this.execAst(this.toAst());
@@ -420,10 +427,13 @@ class CtxexpParser {
             }
             if (token.type === TokenType.ID_FN &&
                 prevToken.type === TokenType.OPE_POI) {
-                return new CallNode(token.text, token.col, access());
+                return new CallNode(token.text, token.col, access(), access());
             }
             if (prevToken.type === TokenType.OPE_CALL_OPEN) {
                 const args = [];
+                if (token.type === TokenType.OPE_CALL_CLOSE) {
+                    return args;
+                }
                 if (token.type === TokenType.DT_NUM) {
                     args.push(new DataNode(Number(token.text), token.col));
                     walk();
