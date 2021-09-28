@@ -2,15 +2,20 @@ export class Exception extends Error {
   message: string;
   col: number;
   code: number;
+  static exp: string;
   constructor(
     col: number,
     message: string,
-    code: ErrorCode = ErrorCode.SYNTAX
+    code: ErrorCode = ErrorCode.SYNTAX,
   ) {
     super();
-    this.message = `CtxexpParserError(${code}): In the ${col} column, ${message}`;
-    this.code = code;
     this.col = col;
+    this.code = code;
+    this.message = `\n${this.toCodeLocTip()}\nCtxexpParserError(${code}): ${message}\n`;
+  }
+
+  toCodeLocTip(){
+    return `    ${Exception.exp}\n    ${' '.repeat(this.col)}^`
   }
 }
 
