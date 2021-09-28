@@ -100,6 +100,9 @@ export class CtxexpParser {
 
       if (prevToken.type === TokenType.OPE_CALL_OPEN) {
         const args = [];
+        if(token.type === TokenType.OPE_CALL_CLOSE){
+          return args;
+        }
         if (token.type === TokenType.DT_NUM) {
           args.push(new DataNode(Number(token.text), token.col));
           walk();

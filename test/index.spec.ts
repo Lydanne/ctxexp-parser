@@ -216,4 +216,38 @@ describe("ctxexpParser", () => {
 
     expect(new CtxexpParser(ctx, exp).exec()).toBe(3);
   });
+
+  it("Solve a chain-access problem caused by passing an empty parameter.", () => {
+    const exp = "$.fn().foo";
+    const ctx = {
+      JSON,
+      fn() {
+        return {
+          foo: 521,
+        };
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(521);
+  });
+
+  it("Solve a problem caused by passing an empty parameter.", () => {
+    const exp = "$.fn()";
+    const exp2 = "$.fn().fn()";
+    const ctx = {
+      JSON,
+      fn() {
+        return {
+          foo: 521,
+          fn(){
+            return this.foo
+          }
+        };
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec().foo).toEqual(521);
+
+    expect(new CtxexpParser(ctx, exp2).exec()).toBe(521);
+  });
 });
