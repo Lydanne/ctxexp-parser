@@ -51,7 +51,7 @@ const res1 = new CtxexpParser($, exp1).exec();
 console.log(res1); // hello cxtexp
 ```
 
-[查看更多例子](https://github.com/WumaCoder/ctxexp-parser/blob/9ba02bf74689cf017743761d578cfaba1f7a54ff/test/index.spec.ts)
+[查看更多例子](https://github.com/WumaCoder/ctxexp-parser/blob/main/test/index.spec.ts)
 
 ## About
 
