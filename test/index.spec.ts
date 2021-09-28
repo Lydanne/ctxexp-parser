@@ -1,7 +1,7 @@
 import { CtxexpParser } from "../src/core/CtxexpParser";
 import { AccessNode, CallNode } from "../src/core/Node";
 
-describe("ctxexpParser", () => {
+describe("CtxexpParser", () => {
   it("should return lovelove", () => {
     const exp = `$.foo.fn($.foo.boo,$.foo.boo)`;
 
@@ -16,7 +16,6 @@ describe("ctxexpParser", () => {
 
     expect(new CtxexpParser(ctx, exp).exec()).toBe("lovelove");
   });
-
 
   it("should combination of nested return lovelovelove", () => {
     const exp = `$.foo.fn($.foo.boo,$.foo.fn($.foo.boo,$.foo.boo))`;
@@ -174,7 +173,7 @@ describe("ctxexpParser", () => {
   });
 
   it("should passing in a JSON", () => {
-    const exp = "$.fn($.JSON.parse(\"{\\\"test\\\":2}\"))"; // 刻意模拟表达式在JSON的情况下
+    const exp = '$.fn($.JSON.parse("{\\"test\\":2}"))'; // 刻意模拟表达式在JSON的情况下
     const ctx = {
       JSON,
       fn(obj) {
@@ -185,7 +184,6 @@ describe("ctxexpParser", () => {
 
     expect(new CtxexpParser(ctx, exp).exec()).toBe(2);
   });
-
 
   it("should access the method return value object", () => {
     const exp = "$.fn(1).foo";
@@ -207,9 +205,9 @@ describe("ctxexpParser", () => {
       JSON,
       fn(n1) {
         return {
-          fn(n2){
-            return n1+n2;
-          }
+          fn(n2) {
+            return n1 + n2;
+          },
         };
       },
     };
@@ -239,9 +237,9 @@ describe("ctxexpParser", () => {
       fn() {
         return {
           foo: 521,
-          fn(){
-            return this.foo
-          }
+          fn() {
+            return this.foo;
+          },
         };
       },
     };
@@ -249,5 +247,33 @@ describe("ctxexpParser", () => {
     expect(new CtxexpParser(ctx, exp).exec().foo).toEqual(521);
 
     expect(new CtxexpParser(ctx, exp2).exec()).toBe(521);
+  });
+
+  it("Method returns a call to a function", () => {
+    const exp = "$.fn()()";
+    const ctx = {
+      JSON,
+      fn() {
+        return () => {
+          return 521;
+        };
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(521);
+  });
+
+  it("Method returns a call to a function 2", () => {
+    const exp = "$.fn()()()";
+    const ctx = {
+      JSON,
+      fn() {
+        return () => {
+          return () => 521;
+        };
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(521);
   });
 });

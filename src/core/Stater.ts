@@ -255,13 +255,19 @@ export function createStater(exp) {
       return O7;
     }
 
-    if(c === '.'){
+    if (c === ".") {
       tokenString = c;
       emit();
       return O2;
     }
 
-    throw new Exception(index, `must be ')' or ',', not '${c}'`);
+    if (c === "(") {
+      tokenString = c;
+      emit();
+      return O5;
+    }
+
+    throw new Exception(index, `must be ')' or ',' or '.', not '${c}'`);
   }
 
   function O7(c: string) {

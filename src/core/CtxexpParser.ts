@@ -24,14 +24,27 @@ export class CtxexpParser {
           const res = deepExecAst(argNode, $);
           args.push(res);
         }
-        if (ctx === undefined || typeof ctx[node.name] !== "function") {
-          throw new Exception(
-            node.col,
-            `No method exists ${node.name}`,
-            ErrorCode.CALL
-          );
+
+        let res = null;
+        if (node.name === "__DEFAULT__") {
+          if (ctx === undefined || typeof ctx !== "function") {
+            throw new Exception(
+              node.col,
+              `No method exists ${node.name}`,
+              ErrorCode.CALL
+            );
+          }
+          res = ctx(...args);
+        } else {
+          if (ctx === undefined || typeof ctx[node.name] !== "function") {
+            throw new Exception(
+              node.col,
+              `No method exists ${node.name}`,
+              ErrorCode.CALL
+            );
+          }
+          res = ctx[node.name](...args);
         }
-        const res = ctx[node.name](...args);
         return deepExecAst(node.prop, res);
       }
 
@@ -98,9 +111,16 @@ export class CtxexpParser {
         return new CallNode(token.text, token.col, access(), access());
       }
 
+      if (
+        token.type === TokenType.OPE_CALL_OPEN &&
+        prevToken.type === TokenType.OPE_CALL_CLOSE
+      ) {
+        return new CallNode("__DEFAULT__", token.col, access(), access());
+      }
+
       if (prevToken.type === TokenType.OPE_CALL_OPEN) {
         const args = [];
-        if(token.type === TokenType.OPE_CALL_CLOSE){
+        if (token.type === TokenType.OPE_CALL_CLOSE) {
           return args;
         }
         if (token.type === TokenType.DT_NUM) {
