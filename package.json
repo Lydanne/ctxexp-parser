@@ -4,8 +4,19 @@
   "main": "libs/ctxexp-parser.cjs.js",
   "module": "libs/ctxexp-parser.esm.js",
   "types": "./types/index.d.ts",
-  "author": {
-    "name": "WumaCoder"
+  "description": "A parser that can execute JS in an environment that cannot execute JS dynamically.",
+  "directories": {
+    "lib": "libs",
+    "test": "test"
+  },
+  "author": "WumaCoder",
+  "homepage": "https://github.com/WumaCoder/ctxexp-parser#readme",
+  "bugs": {
+    "url": "https://github.com/WumaCoder/ctxexp-parser/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WumaCoder/ctxexp-parser.git"
   },
   "license": "MIT",
   "dependencies": {},
@@ -31,7 +42,18 @@
     "expression",
     "lang",
     "parser",
-    "context"
+    "context",
+    "ctxexp",
+    "JSONPath",
+    "jsonpath",
+    "json-path",
+    "object",
+    "traversal",
+    "json",
+    "path",
+    "data",
+    "state machine",
+    "lexer"
   ],
   "scripts": {
     "test": "jest",
