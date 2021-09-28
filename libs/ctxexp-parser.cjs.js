@@ -1,8 +1,3 @@
-// Copyright (c) 2021 WumaCoder
-// 
-// This software is released under the MIT License.
-// https://opensource.org/licenses/MIT
-
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -280,12 +275,17 @@ function createStater(exp) {
             emit();
             return O7;
         }
-        if (c === '.') {
+        if (c === ".") {
             tokenString = c;
             emit();
             return O2;
         }
-        throw new Exception(index, `must be ')' or ',', not '${c}'`);
+        if (c === "(") {
+            tokenString = c;
+            emit();
+            return O5;
+        }
+        throw new Exception(index, `must be ')' or ',' or '.', not '${c}'`);
     }
     function O7(c) {
         if (c === "$") {
@@ -374,10 +374,19 @@ class CtxexpParser {
                     const res = deepExecAst(argNode, $);
                     args.push(res);
                 }
-                if (ctx === undefined || typeof ctx[node.name] !== "function") {
-                    throw new Exception(node.col, `No method exists ${node.name}`, exports.ErrorCode.CALL);
+                let res = null;
+                if (node.name === "__DEFAULT__") {
+                    if (ctx === undefined || typeof ctx !== "function") {
+                        throw new Exception(node.col, `No method exists ${node.name}`, exports.ErrorCode.CALL);
+                    }
+                    res = ctx(...args);
                 }
-                const res = ctx[node.name](...args);
+                else {
+                    if (ctx === undefined || typeof ctx[node.name] !== "function") {
+                        throw new Exception(node.col, `No method exists ${node.name}`, exports.ErrorCode.CALL);
+                    }
+                    res = ctx[node.name](...args);
+                }
                 return deepExecAst(node.prop, res);
             }
             if (node instanceof AccessNode) {
@@ -428,6 +437,10 @@ class CtxexpParser {
             if (token.type === TokenType.ID_FN &&
                 prevToken.type === TokenType.OPE_POI) {
                 return new CallNode(token.text, token.col, access(), access());
+            }
+            if (token.type === TokenType.OPE_CALL_OPEN &&
+                prevToken.type === TokenType.OPE_CALL_CLOSE) {
+                return new CallNode("__DEFAULT__", token.col, access(), access());
             }
             if (prevToken.type === TokenType.OPE_CALL_OPEN) {
                 const args = [];
