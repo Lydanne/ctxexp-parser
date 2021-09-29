@@ -97,14 +97,14 @@ function createStater(exp) {
     function O2(c) {
         if (isProperty(c)) {
             tokenString = c;
-            return S1;
+            return K1;
         }
         throw new Exception(index, `must be work, not '${c}'`);
     }
-    function S1(c) {
+    function K1(c) {
         if (isProperty(c)) {
             tokenString += c;
-            return S1;
+            return K1;
         }
         if (c === ".") {
             emit();
@@ -166,7 +166,7 @@ function createStater(exp) {
         }
         if (isProperty(c)) {
             tokenString = c;
-            return S1;
+            return K1;
         }
         if (c === ",") {
             tokenString = c;
@@ -177,6 +177,11 @@ function createStater(exp) {
             tokenString = c;
             emit();
             return O5;
+        }
+        if (c === "[") {
+            tokenString = c;
+            emit();
+            return O3;
         }
         throw new Exception(index, `must be int or '.' or word or ',' or '(', not '${c}'`);
     }
@@ -224,7 +229,23 @@ function createStater(exp) {
     function O8(c) {
         if (c !== '"') {
             tokenString = c;
+            return S1;
+        }
+        if (c === '"') {
+            emit(TokenType.DT_STR);
+            tokenString = c;
+            emit(TokenType.OPE_STR_CLOSE);
+            return O9;
+        }
+    }
+    function S1(c) {
+        if (c === "\\") {
+            // 特殊字符优先处理
             return S2;
+        }
+        if (c !== '"') {
+            tokenString += c;
+            return S1;
         }
         if (c === '"') {
             emit(TokenType.DT_STR);
@@ -234,24 +255,8 @@ function createStater(exp) {
         }
     }
     function S2(c) {
-        if (c === "\\") {
-            // 特殊字符优先处理
-            return S3;
-        }
-        if (c !== '"') {
-            tokenString += c;
-            return S2;
-        }
-        if (c === '"') {
-            emit(TokenType.DT_STR);
-            tokenString = c;
-            emit(TokenType.OPE_STR_CLOSE);
-            return O9;
-        }
-    }
-    function S3(c) {
         tokenString += c;
-        return S2;
+        return S1;
     }
     function O9(c) {
         if (c === ")") {
@@ -378,8 +383,8 @@ class CtxexpParser {
                 }
                 let res = null;
                 if (node.name === "__DEFAULT__") {
-                    if (ctx === undefined || typeof ctx !== "function") {
-                        throw new Exception(node.col, `No method exists ${node.name}`, ErrorCode.CALL);
+                    if (typeof ctx !== "function") {
+                        throw new Exception(node.col, `It's not a method`, ErrorCode.CALL);
                     }
                     res = ctx(...args);
                 }
@@ -436,12 +441,19 @@ class CtxexpParser {
                 prevToken.type === TokenType.OPE_POI) {
                 return new AccessNode(token.text, token.col, access());
             }
+            if (token.type === TokenType.ID_ARR) {
+                return new AccessNode(token.text, token.col, access());
+            }
             if (token.type === TokenType.ID_FN &&
                 prevToken.type === TokenType.OPE_POI) {
                 return new CallNode(token.text, token.col, access(), access());
             }
             if (token.type === TokenType.OPE_CALL_OPEN &&
                 prevToken.type === TokenType.OPE_CALL_CLOSE) {
+                return new CallNode("__DEFAULT__", token.col, access(), access());
+            }
+            if (token.type === TokenType.OPE_CALL_OPEN &&
+                prevToken.type === TokenType.OPE_ARR_CLOSE) {
                 return new CallNode("__DEFAULT__", token.col, access(), access());
             }
             if (prevToken.type === TokenType.OPE_CALL_OPEN) {
