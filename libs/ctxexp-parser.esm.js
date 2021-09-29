@@ -1,3 +1,8 @@
+// Copyright (c) 2021 WumaCoder
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 class Exception extends Error {
     message;
     col;
@@ -59,6 +64,7 @@ class Token {
 }
 
 const isProperty = (c) => /\w/.test(c);
+const isNumberData = (c) => /[\d\-\.\+]/.test(c);
 function createStater(exp) {
     let tokenString = "";
     let index = 0;
@@ -133,14 +139,14 @@ function createStater(exp) {
         throw new Exception(index, `must be '.' or '(' or '[', not '${c}'`);
     }
     function O3(c) {
-        if (/[0-9]/.test(c)) {
+        if (isNumberData(c)) {
             tokenString = c;
             return N1;
         }
         throw new Exception(index, `must be int, not '${c}'`);
     }
     function N1(c) {
-        if (/[0-9]/.test(c)) {
+        if (isNumberData(c)) {
             tokenString = c;
             return N1;
         }
@@ -190,14 +196,14 @@ function createStater(exp) {
             emit(TokenType.OPE_STR_OPEN);
             return O8;
         }
-        if (/[0-9]/.test(c)) {
+        if (isNumberData(c)) {
             tokenString = c;
             return N2;
         }
         throw new Exception(index, `must be int or '$' or ')' or word or string open, not '${c}'`);
     }
     function N2(c) {
-        if (/[0-9]/.test(c)) {
+        if (isNumberData(c)) {
             tokenString += c;
             return N2;
         }
@@ -294,7 +300,7 @@ function createStater(exp) {
             emit(TokenType.OPE_STR_OPEN);
             return O8;
         }
-        if (/[0-9]/.test(c)) {
+        if (isNumberData(c)) {
             tokenString = c;
             return N2;
         }
