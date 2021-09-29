@@ -118,6 +118,13 @@ export class CtxexpParser {
         return new CallNode("__DEFAULT__", token.col, access(), access());
       }
 
+      if (
+        token.type === TokenType.OPE_CALL_OPEN &&
+        prevToken.type === TokenType.OPE_ARR_CLOSE
+      ) {
+        return new CallNode("__DEFAULT__", token.col, access(), access());
+      }
+
       if (prevToken.type === TokenType.OPE_CALL_OPEN) {
         const args = [];
         if (token.type === TokenType.OPE_CALL_CLOSE) {
