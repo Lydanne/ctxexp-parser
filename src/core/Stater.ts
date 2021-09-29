@@ -43,16 +43,16 @@ export function createStater(exp) {
   function O2(c: string) {
     if (isProperty(c)) {
       tokenString = c;
-      return S1;
+      return K1;
     }
 
     throw new Exception(index, `must be work, not '${c}'`);
   }
 
-  function S1(c: string) {
+  function K1(c: string) {
     if (isProperty(c)) {
       tokenString += c;
-      return S1;
+      return K1;
     }
     if (c === ".") {
       emit();
@@ -120,7 +120,7 @@ export function createStater(exp) {
 
     if (isProperty(c)) {
       tokenString = c;
-      return S1;
+      return K1;
     }
 
     if (c === ",") {
@@ -194,7 +194,26 @@ export function createStater(exp) {
   function O8(c: string) {
     if (c !== '"') {
       tokenString = c;
+      return S1;
+    }
+
+    if (c === '"') {
+      emit(TokenType.DT_STR);
+      tokenString = c;
+      emit(TokenType.OPE_STR_CLOSE);
+      return O9;
+    }
+  }
+
+  function S1(c: string) {
+    if (c === "\\") {
+      // 特殊字符优先处理
       return S2;
+    }
+
+    if (c !== '"') {
+      tokenString += c;
+      return S1;
     }
 
     if (c === '"') {
@@ -206,27 +225,8 @@ export function createStater(exp) {
   }
 
   function S2(c: string) {
-    if (c === "\\") {
-      // 特殊字符优先处理
-      return S3;
-    }
-
-    if (c !== '"') {
-      tokenString += c;
-      return S2;
-    }
-
-    if (c === '"') {
-      emit(TokenType.DT_STR);
-      tokenString = c;
-      emit(TokenType.OPE_STR_CLOSE);
-      return O9;
-    }
-  }
-
-  function S3(c: string) {
     tokenString += c;
-    return S2;
+    return S1;
   }
 
   function O9(c: string) {
