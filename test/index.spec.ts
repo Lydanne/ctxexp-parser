@@ -173,7 +173,7 @@ describe("CtxexpParser", () => {
   });
 
   it("should passing in a JSON", () => {
-    const exp = '$.fn($.JSON.parse("{\\"test\\":2}"))'; // 刻意模拟表达式在JSON的情况下
+    const exp = '$.fn($.JSON.parse("{\\"test\\":2}"))';
     const ctx = {
       JSON,
       fn(obj) {
@@ -275,5 +275,19 @@ describe("CtxexpParser", () => {
     };
 
     expect(new CtxexpParser(ctx, exp).exec()).toBe(521);
+  });
+
+  it("support number type", () => {
+    const exp = "$.fn(1,-1,1.1)";
+    const exp1 = "$.fn(-1,+1,1.1)";
+    const ctx = {
+      JSON,
+      fn(n1, n2, n3) {
+        return [n1, n2, n3];
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toEqual([1, -1, 1.1]);
+    expect(new CtxexpParser(ctx, exp1).exec()).toEqual([-1, 1, 1.1]);
   });
 });

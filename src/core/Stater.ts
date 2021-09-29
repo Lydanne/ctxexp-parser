@@ -3,6 +3,8 @@ import { Exception } from "../helper/Exception";
 
 const isProperty = (c) => /\w/.test(c);
 
+const isNumberData = (c) => /[\d\-\.\+]/.test(c);
+
 export function createStater(exp) {
   let tokenString = "";
   let index = 0;
@@ -86,7 +88,7 @@ export function createStater(exp) {
   }
 
   function O3(c: string) {
-    if (/[0-9]/.test(c)) {
+    if (isNumberData(c)) {
       tokenString = c;
       return N1;
     }
@@ -95,7 +97,7 @@ export function createStater(exp) {
   }
 
   function N1(c: string) {
-    if (/[0-9]/.test(c)) {
+    if (isNumberData(c)) {
       tokenString = c;
       return N1;
     }
@@ -156,7 +158,7 @@ export function createStater(exp) {
       return O8;
     }
 
-    if (/[0-9]/.test(c)) {
+    if (isNumberData(c)) {
       tokenString = c;
       return N2;
     }
@@ -168,7 +170,7 @@ export function createStater(exp) {
   }
 
   function N2(c: string) {
-    if (/[0-9]/.test(c)) {
+    if (isNumberData(c)) {
       tokenString += c;
       return N2;
     }
@@ -282,7 +284,7 @@ export function createStater(exp) {
       return O8;
     }
 
-    if (/[0-9]/.test(c)) {
+    if (isNumberData(c)) {
       tokenString = c;
       return N2;
     }
