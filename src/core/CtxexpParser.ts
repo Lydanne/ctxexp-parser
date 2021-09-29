@@ -27,12 +27,8 @@ export class CtxexpParser {
 
         let res = null;
         if (node.name === "__DEFAULT__") {
-          if (ctx === undefined || typeof ctx !== "function") {
-            throw new Exception(
-              node.col,
-              `No method exists ${node.name}`,
-              ErrorCode.CALL
-            );
+          if (typeof ctx !== "function") {
+            throw new Exception(node.col, `It's not a method`, ErrorCode.CALL);
           }
           res = ctx(...args);
         } else {
