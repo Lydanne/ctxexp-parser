@@ -135,6 +135,12 @@ export function createStater(exp) {
       return O5;
     }
 
+    if (c === "[") {
+      tokenString = c;
+      emit();
+      return O3;
+    }
+
     throw new Exception(
       index,
       `must be int or '.' or word or ',' or '(', not '${c}'`

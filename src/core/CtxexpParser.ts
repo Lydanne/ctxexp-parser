@@ -100,6 +100,10 @@ export class CtxexpParser {
         return new AccessNode(token.text, token.col, access());
       }
 
+      if (token.type === TokenType.ID_ARR) {
+        return new AccessNode(token.text, token.col, access());
+      }
+
       if (
         token.type === TokenType.ID_FN &&
         prevToken.type === TokenType.OPE_POI
