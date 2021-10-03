@@ -169,10 +169,127 @@ export function createStater(exp) {
       return N2;
     }
 
+    if (c === "(") {
+      tokenString = c;
+      emit(TokenType.OPE_ARG_OPEN);
+      return F1;
+    }
+
     throw new Exception(
       index,
-      `must be int or '$' or ')' or word or string open, not '${c}'`
+      `must be int or '$' or ')' or callback or word or string open, not '${c}'`
     );
+  }
+
+  function F1(c: string) {
+    if (isProperty(c)) {
+      tokenString = c;
+      return K2;
+    }
+
+    if (c === ")") {
+      tokenString = c;
+      emit(TokenType.OPE_ARG_CLOSE);
+      return F2;
+    }
+  }
+
+  function K2(c: string) {
+    if (isProperty(c)) {
+      tokenString += c;
+      return K2;
+    }
+
+    if (c === ")") {
+      emit();
+      tokenString = c;
+      emit(TokenType.OPE_ARG_CLOSE);
+      return F2;
+    }
+
+    if (c === ",") {
+      emit();
+      tokenString = c;
+      emit();
+      return O10;
+    }
+  }
+
+  function O10(c: string) {
+    if (isProperty(c)) {
+      tokenString += c;
+      return K2;
+    }
+  }
+
+  function F2(c: string) {
+    if (c === "=") {
+      tokenString += c;
+      return F3;
+    }
+  }
+
+  function F3(c: string) {
+    if (c === ">") {
+      tokenString += c;
+      emit(TokenType.DT_FN);
+      return F3;
+    }
+
+    if (isProperty(c)) {
+      tokenString = c;
+      emit();
+      return K3;
+    }
+
+    if (c === "$") {
+      tokenString = c;
+      emit();
+      return O1;
+    }
+
+    if (c === '"') {
+      tokenString = c;
+      emit(TokenType.OPE_STR_OPEN);
+      return O8;
+    }
+
+    if (isNumberData(c)) {
+      tokenString = c;
+      return N2;
+    }
+  }
+
+  function K3(c: string) {
+    if (isProperty(c)) {
+      tokenString += c;
+      emit();
+      return K3;
+    }
+
+    if (c === ")") {
+      tokenString = c;
+      emit();
+      return O6;
+    }
+
+    if (c === ",") {
+      tokenString = c;
+      emit();
+      return O7;
+    }
+
+    if (c === "(") {
+      tokenString = c;
+      emit();
+      return O5;
+    }
+
+    if (c === ".") {
+      tokenString = c;
+      emit();
+      return O2;
+    }
   }
 
   function N2(c: string) {
@@ -293,6 +410,12 @@ export function createStater(exp) {
     if (isNumberData(c)) {
       tokenString = c;
       return N2;
+    }
+
+    if (c === "(") {
+      tokenString = c;
+      emit(TokenType.OPE_ARG_OPEN);
+      return F1;
     }
 
     throw new Exception(index, `must be '$' or '"' or int, not '${c}'`);

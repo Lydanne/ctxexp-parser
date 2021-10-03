@@ -7,6 +7,8 @@ export enum TokenType {
   OPE_ARR_CLOSE = "]",
   OPE_CALL_OPEN = "(",
   OPE_CALL_CLOSE = ")",
+  OPE_ARG_OPEN = "fn(",
+  OPE_ARG_CLOSE = "fn)",
   OPE_STR_OPEN = "ope_str_open",
   OPE_STR_CLOSE = "ope_str_close",
   ID_ARR = "id_arr",
@@ -14,6 +16,7 @@ export enum TokenType {
   ID_FN = "id_fn",
   DT_STR = "dt_str",
   DT_NUM = "dt_num",
+  DT_FN = "dt_fn", // =>
   EOF = "eof",
 }
 

@@ -199,7 +199,6 @@ describe("CtxexpParser", () => {
         return obj.test;
       },
     };
-    console.log(exp);
 
     expect(new CtxexpParser(ctx, exp).exec()).toBe(2);
   });
@@ -308,5 +307,25 @@ describe("CtxexpParser", () => {
 
     expect(new CtxexpParser(ctx, exp).exec()).toEqual([1, -1, 1.1]);
     expect(new CtxexpParser(ctx, exp1).exec()).toEqual([-1, 1, 1.1]);
+  });
+
+  it("Passed function expression.", () => {
+    const exp = `$.when(1,()=>$.True(),()=>$.False())`;
+    const exp1 = `$.when(0,()=>$.True(),()=>$.False())`;
+
+    const ctx = {
+      True: () => true,
+      False: () => false,
+      when(bool, trueCb, falseCb) {
+        if (bool) {
+          return trueCb();
+        } else {
+          return falseCb();
+        }
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toBe(true);
+    expect(new CtxexpParser(ctx, exp1).exec()).toBe(false);
   });
 });

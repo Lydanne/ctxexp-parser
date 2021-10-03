@@ -68,6 +68,7 @@ export class CtxexpParser {
   }
 
   toAst() {
+    const that = this;
     const tokens = this.tokens;
 
     let token: Token = null;
@@ -138,6 +139,11 @@ export class CtxexpParser {
           args.push(new DataNode(String(token.text), token.col));
           walk();
           walk();
+        } else if (token.type === TokenType.OPE_ARG_OPEN) {
+          walk();
+          walk();
+          const subAst = access();
+          args.push(new DataNode(() => that.execAst(subAst), token?.col));
         } else {
           args.push(new AccessNode(token.text, token.col, access()));
         }
@@ -151,6 +157,11 @@ export class CtxexpParser {
             args.push(new DataNode(String(token.text), token.col));
             walk();
             walk();
+          } else if (token.type === TokenType.OPE_ARG_OPEN) {
+            walk();
+            walk();
+            const subAst = access();
+            args.push(new DataNode(() => that.execAst(subAst), token?.col));
           } else {
             args.push(new AccessNode(token.text, token.col, access()));
           }
