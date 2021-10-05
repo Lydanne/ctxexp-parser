@@ -153,6 +153,7 @@ export function createStater(exp) {
       emit();
       return O1;
     }
+
     if (c === ")") {
       tokenString = c;
       emit();
@@ -173,6 +174,11 @@ export function createStater(exp) {
       tokenString = c;
       emit(TokenType.OPE_ARG_OPEN);
       return F1;
+    }
+
+    if (isProperty(c)) {
+      tokenString = c;
+      return K1;
     }
 
     throw new Exception(
@@ -236,16 +242,16 @@ export function createStater(exp) {
       return F3;
     }
 
-    if (isProperty(c)) {
-      tokenString = c;
-      emit();
-      return K3;
-    }
-
     if (c === "$") {
       tokenString = c;
       emit();
       return O1;
+    }
+
+    if (isProperty(c)) {
+      tokenString = c;
+      emit();
+      return K3;
     }
 
     if (c === '"') {
@@ -418,11 +424,12 @@ export function createStater(exp) {
       return F1;
     }
 
-    throw new Exception(index, `must be '$' or '"' or int, not '${c}'`);
-  }
+    if (isProperty(c)) {
+      tokenString = c;
+      return K1;
+    }
 
-  function end(c: string) {
-    return end;
+    throw new Exception(index, `must be '$' or '"' or int, not '${c}'`);
   }
 
   function emit(type?: TokenType) {

@@ -13,6 +13,7 @@ export enum TokenType {
   OPE_STR_CLOSE = "ope_str_close",
   ID_ARR = "id_arr",
   ID_OBJ = "id_obj",
+  DEF_VAR = "def_var",
   ID_FN = "id_fn",
   DT_STR = "dt_str",
   DT_NUM = "dt_num",

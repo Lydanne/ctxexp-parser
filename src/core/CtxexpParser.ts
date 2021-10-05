@@ -1,7 +1,7 @@
 import { Lexer } from "./Lexer";
 import { Token, TokenType } from "./Token";
 import { Exception, ErrorCode } from "../helper/Exception";
-import { CallNode, AccessNode, DataNode } from "./Node";
+import { CallNode, AccessNode, DataNode, Node } from "./Node";
 
 export class CtxexpParser {
   tokens: Token[];
@@ -11,8 +11,7 @@ export class CtxexpParser {
     this.ctx = ctx as any;
   }
 
-  execAst(ast) {
-    const $ = this.ctx;
+  execAst(ast, $ = this.ctx, defArgs = {}) {
     const deepExecAst = (node, ctx) => {
       if (!node || Object.keys(node).length === 0) {
         return ctx;
@@ -49,10 +48,13 @@ export class CtxexpParser {
           const res = deepExecAst(node.prop, $);
           return res;
         }
-        if (ctx === undefined) {
-          throw new Exception(node.col, `ctx not undefined`, ErrorCode.READ);
-        }
-        const res = deepExecAst(node.prop, ctx[node.name]);
+        // if (ctx === undefined) {
+        //   throw new Exception(node.col, `ctx not undefined`, ErrorCode.READ);
+        // }
+        const res = deepExecAst(
+          node.prop,
+          defArgs?.[node.name] ?? ctx?.[node.name]
+        );
         return res;
       }
 
@@ -64,7 +66,7 @@ export class CtxexpParser {
     return deepExecAst(ast, $);
   }
   exec() {
-    return this.execAst(this.toAst());
+    return this.execAst(this.toAst(), this.ctx);
   }
 
   toAst() {
@@ -73,104 +75,148 @@ export class CtxexpParser {
 
     let token: Token = null;
     let prevToken: Token = null;
-    let ast = access();
+    let stackDeep: number = 0;
+
+    walk();
+    let ast = buildAst();
 
     return ast;
 
     function walk() {
       prevToken = token;
       token = tokens.shift();
+
+      if (token?.text === "(" || token?.text === ")") {
+        stackDeep += token.text === "(" ? 1 : -1;
+      }
     }
 
-    function access() {
-      walk();
-      if (!token) {
-        return null;
-      }
-      if (token.type === TokenType.OPE_ARG_SPT) {
-        return null;
-      }
-      if (token.type === TokenType.ID_OBJ && prevToken === null) {
-        return new AccessNode(token.text, token.col, access());
-      }
+    function buildAst() {
+      if (token?.type === TokenType.ID_OBJ) {
+        const ast = new AccessNode(token.text, token.col);
+        let next: any = ast;
 
-      if (
-        token.type === TokenType.ID_OBJ &&
-        prevToken.type === TokenType.OPE_POI
-      ) {
-        return new AccessNode(token.text, token.col, access());
-      }
-
-      if (token.type === TokenType.ID_ARR) {
-        return new AccessNode(token.text, token.col, access());
-      }
-
-      if (
-        token.type === TokenType.ID_FN &&
-        prevToken.type === TokenType.OPE_POI
-      ) {
-        return new CallNode(token.text, token.col, access(), access());
-      }
-
-      if (
-        token.type === TokenType.OPE_CALL_OPEN &&
-        prevToken.type === TokenType.OPE_CALL_CLOSE
-      ) {
-        return new CallNode("__DEFAULT__", token.col, access(), access());
-      }
-
-      if (
-        token.type === TokenType.OPE_CALL_OPEN &&
-        prevToken.type === TokenType.OPE_ARR_CLOSE
-      ) {
-        return new CallNode("__DEFAULT__", token.col, access(), access());
-      }
-
-      if (prevToken.type === TokenType.OPE_CALL_OPEN) {
-        const args = [];
-        if (token.type === TokenType.OPE_CALL_CLOSE) {
-          return args;
-        }
-        if (token.type === TokenType.DT_NUM) {
-          args.push(new DataNode(Number(token.text), token.col));
-          walk();
-        } else if (token.type === TokenType.OPE_STR_OPEN) {
-          walk();
-          args.push(new DataNode(String(token.text), token.col));
-          walk();
-          walk();
-        } else if (token.type === TokenType.OPE_ARG_OPEN) {
-          walk();
-          walk();
-          const subAst = access();
-          args.push(new DataNode(() => that.execAst(subAst), token?.col));
-        } else {
-          args.push(new AccessNode(token.text, token.col, access()));
-        }
         walk();
-        while ((prevToken?.type as TokenType) === TokenType.OPE_ARG_SPT) {
-          if (token.type === TokenType.DT_NUM) {
-            args.push(new DataNode(Number(token.text), token.col));
-            walk();
-          } else if (token.type === TokenType.OPE_STR_OPEN) {
-            walk();
-            args.push(new DataNode(String(token.text), token.col));
-            walk();
-            walk();
-          } else if (token.type === TokenType.OPE_ARG_OPEN) {
-            walk();
-            walk();
-            const subAst = access();
-            args.push(new DataNode(() => that.execAst(subAst), token?.col));
+        while (
+          (token?.type as TokenType) === TokenType.OPE_POI ||
+          (token?.type as TokenType) === TokenType.OPE_ARR_OPEN ||
+          (token?.type as TokenType) === TokenType.OPE_ARG_CLOSE
+        ) {
+          walk();
+          if ((token?.type as TokenType) === TokenType.ID_FN) {
+            next = next.prop = buildAst();
           } else {
-            args.push(new AccessNode(token.text, token.col, access()));
+            next = next.prop = new AccessNode(token.text, token.col);
+            walk();
+          }
+        }
+
+        return ast;
+      }
+
+      if (token?.type === TokenType.ID_FN) {
+        // method handler
+        const ast: any = new CallNode(token.text, token.col);
+        walk();
+        if ((token?.type as TokenType) !== TokenType.OPE_CALL_OPEN) {
+          throw new Exception(
+            token.col,
+            `method ${prevToken.text} syntax error`,
+            ErrorCode.SYNTAX
+          );
+        }
+        walk(); // skip '('
+        while (
+          token &&
+          (token.type as TokenType) !== TokenType.OPE_CALL_CLOSE
+        ) {
+          if ((token?.type as TokenType) === TokenType.OPE_ARG_SPT) {
+            walk();
+          }
+
+          /*TODO: 待优化可读性
+          if (
+            tokenType === TokenType.ID_FN ||
+            tokenType === TokenType.OPE_STR_OPEN
+          ) {
+            const subAst = buildAst();
+            ast.args.push(subAst);
+          } else {
+            const subAst = buildAst();
+            ast.args.push(subAst);
+            walk();
+          } */
+
+          const subAst = buildAst();
+          ast.args.push(subAst);
+          if ((token?.type as TokenType) === TokenType.OPE_CALL_CLOSE) {
+            break;
           }
           walk();
         }
-        return args;
+        walk(); // skip ')'
+        if ((token?.type as TokenType) === TokenType.OPE_POI) {
+          walk(); // skip '.'
+          ast.prop = buildAst();
+        } else if ((token?.type as TokenType) === TokenType.OPE_CALL_OPEN) {
+          ast.prop = buildAst();
+        }
+
+        return ast;
       }
 
-      return access();
+      if (token?.type === TokenType.OPE_CALL_OPEN) {
+        tokens.unshift(token);
+        tokens.unshift(new Token("__DEFAULT__", token.col, TokenType.ID_FN));
+        walk();
+        return buildAst();
+      }
+
+      if (token?.type === TokenType.OPE_STR_OPEN) {
+        walk();
+        const ast =
+          (token?.type as TokenType) === TokenType.OPE_ARR_CLOSE
+            ? new DataNode("", token.col)
+            : new DataNode(token.text, token.col);
+        walk();
+        return ast;
+      }
+
+      if (token?.type === TokenType.DT_NUM) {
+        return new DataNode(Number(token.text), token.col);
+      }
+
+      if (token?.type === TokenType.OPE_ARG_OPEN) {
+        const defArgTokens = [];
+        const col = token.col;
+        walk();
+        while ((token?.type as TokenType) !== TokenType.OPE_ARG_CLOSE) {
+          if ((token?.type as TokenType) === TokenType.OPE_ARG_SPT) {
+            walk();
+          }
+          defArgTokens.push(token);
+          walk();
+        }
+        walk(); // skip 'fn)'
+        walk(); // skip '=>'
+        const subAst = buildAst();
+        return new DataNode(
+          (...args) =>
+            that.execAst(subAst, that.ctx, argsMapObj(args, defArgTokens)),
+          col
+        );
+      }
+
+      return null;
+    }
+
+    function argsMapObj(args: any[], defTokens: Token[]) {
+      const obj = {};
+      for (let i = 0; i < defTokens.length; i++) {
+        const token = defTokens[i];
+        obj[token.text] = args[i];
+      }
+      return obj;
     }
   }
 }

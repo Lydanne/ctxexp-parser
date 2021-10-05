@@ -30,4 +30,4 @@ export class DataNode<T> {
   }
 }
 
-type Node = AccessNode | CallNode | DataNode<any>;
+export type Node = AccessNode | CallNode | DataNode<any>;
