@@ -46,13 +46,17 @@ var TokenType;
     TokenType["OPE_ARR_CLOSE"] = "]";
     TokenType["OPE_CALL_OPEN"] = "(";
     TokenType["OPE_CALL_CLOSE"] = ")";
+    TokenType["OPE_ARG_OPEN"] = "fn(";
+    TokenType["OPE_ARG_CLOSE"] = "fn)";
     TokenType["OPE_STR_OPEN"] = "ope_str_open";
     TokenType["OPE_STR_CLOSE"] = "ope_str_close";
     TokenType["ID_ARR"] = "id_arr";
     TokenType["ID_OBJ"] = "id_obj";
+    TokenType["DEF_VAR"] = "def_var";
     TokenType["ID_FN"] = "id_fn";
     TokenType["DT_STR"] = "dt_str";
     TokenType["DT_NUM"] = "dt_num";
+    TokenType["DT_FN"] = "dt_fn";
     TokenType["EOF"] = "eof";
 })(TokenType || (TokenType = {}));
 mapperEnum(TokenType);
@@ -209,7 +213,110 @@ function createStater(exp) {
             tokenString = c;
             return N2;
         }
-        throw new Exception(index, `must be int or '$' or ')' or word or string open, not '${c}'`);
+        if (c === "(") {
+            tokenString = c;
+            emit(TokenType.OPE_ARG_OPEN);
+            return F1;
+        }
+        if (isProperty(c)) {
+            tokenString = c;
+            return K1;
+        }
+        throw new Exception(index, `must be int or '$' or ')' or callback or word or string open, not '${c}'`);
+    }
+    function F1(c) {
+        if (isProperty(c)) {
+            tokenString = c;
+            return K2;
+        }
+        if (c === ")") {
+            tokenString = c;
+            emit(TokenType.OPE_ARG_CLOSE);
+            return F2;
+        }
+    }
+    function K2(c) {
+        if (isProperty(c)) {
+            tokenString += c;
+            return K2;
+        }
+        if (c === ")") {
+            emit();
+            tokenString = c;
+            emit(TokenType.OPE_ARG_CLOSE);
+            return F2;
+        }
+        if (c === ",") {
+            emit();
+            tokenString = c;
+            emit();
+            return O10;
+        }
+    }
+    function O10(c) {
+        if (isProperty(c)) {
+            tokenString += c;
+            return K2;
+        }
+    }
+    function F2(c) {
+        if (c === "=") {
+            tokenString += c;
+            return F3;
+        }
+    }
+    function F3(c) {
+        if (c === ">") {
+            tokenString += c;
+            emit(TokenType.DT_FN);
+            return F3;
+        }
+        if (c === "$") {
+            tokenString = c;
+            emit();
+            return O1;
+        }
+        if (isProperty(c)) {
+            tokenString = c;
+            emit();
+            return K3;
+        }
+        if (c === '"') {
+            tokenString = c;
+            emit(TokenType.OPE_STR_OPEN);
+            return O8;
+        }
+        if (isNumberData(c)) {
+            tokenString = c;
+            return N2;
+        }
+    }
+    function K3(c) {
+        if (isProperty(c)) {
+            tokenString += c;
+            emit();
+            return K3;
+        }
+        if (c === ")") {
+            tokenString = c;
+            emit();
+            return O6;
+        }
+        if (c === ",") {
+            tokenString = c;
+            emit();
+            return O7;
+        }
+        if (c === "(") {
+            tokenString = c;
+            emit();
+            return O5;
+        }
+        if (c === ".") {
+            tokenString = c;
+            emit();
+            return O2;
+        }
     }
     function N2(c) {
         if (isNumberData(c)) {
@@ -313,6 +420,15 @@ function createStater(exp) {
             tokenString = c;
             return N2;
         }
+        if (c === "(") {
+            tokenString = c;
+            emit(TokenType.OPE_ARG_OPEN);
+            return F1;
+        }
+        if (isProperty(c)) {
+            tokenString = c;
+            return K1;
+        }
         throw new Exception(index, `must be '$' or '"' or int, not '${c}'`);
     }
     function emit(type) {
@@ -372,8 +488,7 @@ class CtxexpParser {
         this.tokens = new Lexer(exp).toTokens();
         this.ctx = ctx;
     }
-    execAst(ast) {
-        const $ = this.ctx;
+    execAst(ast, $ = this.ctx, defArgs = {}) {
         const deepExecAst = (node, ctx) => {
             if (!node || Object.keys(node).length === 0) {
                 return ctx;
@@ -405,10 +520,10 @@ class CtxexpParser {
                     const res = deepExecAst(node.prop, $);
                     return res;
                 }
-                if (ctx === undefined) {
-                    throw new Exception(node.col, `ctx not undefined`, exports.ErrorCode.READ);
-                }
-                const res = deepExecAst(node.prop, ctx[node.name]);
+                // if (ctx === undefined) {
+                //   throw new Exception(node.col, `ctx not undefined`, ErrorCode.READ);
+                // }
+                const res = deepExecAst(node.prop, defArgs?.[node.name] ?? ctx?.[node.name]);
                 return res;
             }
             if (node instanceof DataNode) {
@@ -418,86 +533,134 @@ class CtxexpParser {
         return deepExecAst(ast, $);
     }
     exec() {
-        return this.execAst(this.toAst());
+        return this.execAst(this.toAst(), this.ctx);
     }
     toAst() {
+        const that = this;
         const tokens = this.tokens;
         let token = null;
         let prevToken = null;
-        let ast = access();
+        let stackDeep = 0;
+        walk();
+        let ast = buildAst();
         return ast;
         function walk() {
             prevToken = token;
             token = tokens.shift();
+            if (token?.text === "(" || token?.text === ")") {
+                stackDeep += token.text === "(" ? 1 : -1;
+            }
         }
-        function access() {
-            walk();
-            if (!token) {
-                return null;
-            }
-            if (token.type === TokenType.OPE_ARG_SPT) {
-                return null;
-            }
-            if (token.type === TokenType.ID_OBJ && prevToken === null) {
-                return new AccessNode(token.text, token.col, access());
-            }
-            if (token.type === TokenType.ID_OBJ &&
-                prevToken.type === TokenType.OPE_POI) {
-                return new AccessNode(token.text, token.col, access());
-            }
-            if (token.type === TokenType.ID_ARR) {
-                return new AccessNode(token.text, token.col, access());
-            }
-            if (token.type === TokenType.ID_FN &&
-                prevToken.type === TokenType.OPE_POI) {
-                return new CallNode(token.text, token.col, access(), access());
-            }
-            if (token.type === TokenType.OPE_CALL_OPEN &&
-                prevToken.type === TokenType.OPE_CALL_CLOSE) {
-                return new CallNode("__DEFAULT__", token.col, access(), access());
-            }
-            if (token.type === TokenType.OPE_CALL_OPEN &&
-                prevToken.type === TokenType.OPE_ARR_CLOSE) {
-                return new CallNode("__DEFAULT__", token.col, access(), access());
-            }
-            if (prevToken.type === TokenType.OPE_CALL_OPEN) {
-                const args = [];
-                if (token.type === TokenType.OPE_CALL_CLOSE) {
-                    return args;
-                }
-                if (token.type === TokenType.DT_NUM) {
-                    args.push(new DataNode(Number(token.text), token.col));
-                    walk();
-                }
-                else if (token.type === TokenType.OPE_STR_OPEN) {
-                    walk();
-                    args.push(new DataNode(String(token.text), token.col));
-                    walk();
-                    walk();
-                }
-                else {
-                    args.push(new AccessNode(token.text, token.col, access()));
-                }
+        function buildAst() {
+            if (token?.type === TokenType.ID_OBJ) {
+                const ast = new AccessNode(token.text, token.col);
+                let next = ast;
                 walk();
-                while (prevToken?.type === TokenType.OPE_ARG_SPT) {
-                    if (token.type === TokenType.DT_NUM) {
-                        args.push(new DataNode(Number(token.text), token.col));
+                while (token?.type === TokenType.OPE_POI ||
+                    token?.type === TokenType.OPE_ARR_OPEN ||
+                    token?.type === TokenType.OPE_ARR_CLOSE) {
+                    walk();
+                    if (prevToken?.type === TokenType.OPE_ARR_CLOSE &&
+                        (token?.type === TokenType.OPE_POI ||
+                            token?.type === TokenType.OPE_ARR_OPEN)) {
+                        // array exceptional case
                         walk();
                     }
-                    else if (token.type === TokenType.OPE_STR_OPEN) {
-                        walk();
-                        args.push(new DataNode(String(token.text), token.col));
-                        walk();
+                    if (token?.type === TokenType.ID_OBJ ||
+                        token?.type === TokenType.ID_ARR) {
+                        next = next.prop = new AccessNode(token.text, token.col);
                         walk();
                     }
                     else {
-                        args.push(new AccessNode(token.text, token.col, access()));
+                        next = next.prop = buildAst();
+                    }
+                }
+                return ast;
+            }
+            if (token?.type === TokenType.ID_FN) {
+                // method handler
+                const ast = new CallNode(token.text, token.col);
+                walk();
+                if (token?.type !== TokenType.OPE_CALL_OPEN) {
+                    throw new Exception(token.col, `method ${prevToken.text} syntax error`, exports.ErrorCode.SYNTAX);
+                }
+                walk(); // skip '('
+                while (token &&
+                    token.type !== TokenType.OPE_CALL_CLOSE) {
+                    if (token?.type === TokenType.OPE_ARG_SPT) {
+                        walk();
+                    }
+                    /*TODO: 待优化可读性
+                    if (
+                      tokenType === TokenType.ID_FN ||
+                      tokenType === TokenType.OPE_STR_OPEN
+                    ) {
+                      const subAst = buildAst();
+                      ast.args.push(subAst);
+                    } else {
+                      const subAst = buildAst();
+                      ast.args.push(subAst);
+                      walk();
+                    } */
+                    const subAst = buildAst();
+                    ast.args.push(subAst);
+                    if (token?.type === TokenType.OPE_CALL_CLOSE) {
+                        break;
                     }
                     walk();
                 }
-                return args;
+                walk(); // skip ')'
+                if (token?.type === TokenType.OPE_POI) {
+                    walk(); // skip '.'
+                    ast.prop = buildAst();
+                }
+                else if (token?.type === TokenType.OPE_CALL_OPEN) {
+                    ast.prop = buildAst();
+                }
+                return ast;
             }
-            return access();
+            if (token?.type === TokenType.OPE_CALL_OPEN) {
+                tokens.unshift(token);
+                tokens.unshift(new Token("__DEFAULT__", token.col, TokenType.ID_FN));
+                walk();
+                return buildAst();
+            }
+            if (token?.type === TokenType.OPE_STR_OPEN) {
+                walk();
+                const ast = token?.type === TokenType.OPE_ARR_CLOSE
+                    ? new DataNode("", token.col)
+                    : new DataNode(token.text, token.col);
+                walk();
+                return ast;
+            }
+            if (token?.type === TokenType.DT_NUM) {
+                return new DataNode(Number(token.text), token.col);
+            }
+            if (token?.type === TokenType.OPE_ARG_OPEN) {
+                const defArgTokens = [];
+                const col = token.col;
+                walk();
+                while (token?.type !== TokenType.OPE_ARG_CLOSE) {
+                    if (token?.type === TokenType.OPE_ARG_SPT) {
+                        walk();
+                    }
+                    defArgTokens.push(token);
+                    walk();
+                }
+                walk(); // skip 'fn)'
+                walk(); // skip '=>'
+                const subAst = buildAst();
+                return new DataNode((...args) => that.execAst(subAst, that.ctx, argsMapObj(args, defArgTokens)), col);
+            }
+            return null;
+        }
+        function argsMapObj(args, defTokens) {
+            const obj = {};
+            for (let i = 0; i < defTokens.length; i++) {
+                const token = defTokens[i];
+                obj[token.text] = args[i];
+            }
+            return obj;
         }
     }
 }

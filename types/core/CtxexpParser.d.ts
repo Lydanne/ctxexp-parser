@@ -3,7 +3,7 @@ export declare class CtxexpParser {
     tokens: Token[];
     ctx: any;
     constructor(ctx: any, exp: any);
-    execAst(ast: any): any;
+    execAst(ast: any, $?: any, defArgs?: {}): any;
     exec(): any;
     toAst(): any;
 }

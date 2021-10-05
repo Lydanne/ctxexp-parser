@@ -17,6 +17,6 @@ export declare class DataNode<T> {
     value: T;
     constructor(value: T, col?: number);
 }
-declare type Node = AccessNode | CallNode | DataNode<any>;
+export declare type Node = AccessNode | CallNode | DataNode<any>;
 export {};
 //# sourceMappingURL=Node.d.ts.map
