@@ -100,14 +100,25 @@ export class CtxexpParser {
         while (
           (token?.type as TokenType) === TokenType.OPE_POI ||
           (token?.type as TokenType) === TokenType.OPE_ARR_OPEN ||
-          (token?.type as TokenType) === TokenType.OPE_ARG_CLOSE
+          (token?.type as TokenType) === TokenType.OPE_ARR_CLOSE
         ) {
           walk();
-          if ((token?.type as TokenType) === TokenType.ID_FN) {
-            next = next.prop = buildAst();
-          } else {
+          if (
+            (prevToken?.type as TokenType) === TokenType.OPE_ARR_CLOSE &&
+            ((token?.type as TokenType) === TokenType.OPE_POI ||
+              (token?.type as TokenType) === TokenType.OPE_ARR_OPEN)
+          ) {
+            // array exceptional case
+            walk();
+          }
+          if (
+            (token?.type as TokenType) === TokenType.ID_OBJ ||
+            (token?.type as TokenType) === TokenType.ID_ARR
+          ) {
             next = next.prop = new AccessNode(token.text, token.col);
             walk();
+          } else {
+            next = next.prop = buildAst();
           }
         }
 

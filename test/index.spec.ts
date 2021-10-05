@@ -53,7 +53,7 @@ describe("CtxexpParser", () => {
   });
 
   it("should return array value", () => {
-    // const _exp = `$.arr.0`;
+    const _exp = `$.arr.0`;
     const exp = `$.arr[0]`;
     const exp1 = `$.arr[1].a`;
     const exp2 = `$.arr[2][0]`;
@@ -64,13 +64,13 @@ describe("CtxexpParser", () => {
       arr: [1, { a: 1 }, [1], [{ a: 1 }], [[1]], () => 1],
     };
 
-    // expect(new CtxexpParser(ctx, _exp).exec()).toBe(1);
+    expect(new CtxexpParser(ctx, _exp).exec()).toBe(1);
     expect(new CtxexpParser(ctx, exp).exec()).toBe(1);
-    // expect(new CtxexpParser(ctx, exp1).exec()).toBe(1);
-    // expect(new CtxexpParser(ctx, exp2).exec()).toBe(1);
-    // expect(new CtxexpParser(ctx, exp3).exec()).toBe(1);
-    // expect(new CtxexpParser(ctx, exp4).exec()).toBe(1);
-    // expect(new CtxexpParser(ctx, exp5).exec()).toBe(1);
+    expect(new CtxexpParser(ctx, exp1).exec()).toBe(1);
+    expect(new CtxexpParser(ctx, exp2).exec()).toBe(1);
+    expect(new CtxexpParser(ctx, exp3).exec()).toBe(1);
+    expect(new CtxexpParser(ctx, exp4).exec()).toBe(1);
+    expect(new CtxexpParser(ctx, exp5).exec()).toBe(1);
   });
 
   it("should input fun multi param 1", () => {
