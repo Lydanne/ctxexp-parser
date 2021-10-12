@@ -232,3 +232,5 @@ export class CtxexpParser {
     return this.execAst(this.toAst(), this.ctx);
   }
 }
+
+export default CtxexpParser;
