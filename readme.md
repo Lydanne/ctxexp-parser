@@ -34,8 +34,8 @@ npm i ctxexp-parser
 ## Uses
 
 ```js
-const CtxexpParser = require("ctxexp-parser");
-// import CtxexpParser from "ctxexp-parser";
+const { CtxexpParser } = require("ctxexp-parser");
+// import { CtxexpParser } from "ctxexp-parser";
 
 const $ = {
   a: "hello",
