@@ -480,72 +480,24 @@ class DataNode {
 class CtxexpParser {
     tokens;
     ctx;
+    exp;
     constructor(ctx, exp) {
-        this.tokens = new Lexer(exp).toTokens();
         this.ctx = ctx;
+        this.exp = exp;
     }
-    execAst(ast, $ = this.ctx, defArgs = {}) {
-        const deepExecAst = (node, ctx) => {
-            if (!node || Object.keys(node).length === 0) {
-                return ctx;
-            }
-            if (node instanceof CallNode) {
-                const args = [];
-                for (let i = 0; i < node.args.length; i++) {
-                    const argNode = node.args[i];
-                    const res = deepExecAst(argNode, $);
-                    args.push(res);
-                }
-                let res = null;
-                if (node.name === "__DEFAULT__") {
-                    if (typeof ctx !== "function") {
-                        throw new Exception(node.col, `It's not a method`, ErrorCode.CALL);
-                    }
-                    res = ctx(...args);
-                }
-                else {
-                    if (ctx === undefined || typeof ctx[node.name] !== "function") {
-                        throw new Exception(node.col, `No method exists ${node.name}`, ErrorCode.CALL);
-                    }
-                    res = ctx[node.name](...args);
-                }
-                return deepExecAst(node.prop, res);
-            }
-            if (node instanceof AccessNode) {
-                if (node.name === "$") {
-                    const res = deepExecAst(node.prop, $);
-                    return res;
-                }
-                // if (ctx === undefined) {
-                //   throw new Exception(node.col, `ctx not undefined`, ErrorCode.READ);
-                // }
-                const res = deepExecAst(node.prop, defArgs?.[node.name] ?? ctx?.[node.name]);
-                return res;
-            }
-            if (node instanceof DataNode) {
-                return node.value;
-            }
-        };
-        return deepExecAst(ast, $);
+    toTokens(exp = this.exp) {
+        return (this.tokens = new Lexer(exp).toTokens());
     }
-    exec() {
-        return this.execAst(this.toAst(), this.ctx);
-    }
-    toAst() {
+    toAst(tokens = this.tokens) {
         const that = this;
-        const tokens = this.tokens;
         let token = null;
         let prevToken = null;
-        let stackDeep = 0;
         walk();
         let ast = buildAst();
         return ast;
         function walk() {
             prevToken = token;
             token = tokens.shift();
-            if (token?.text === "(" || token?.text === ")") {
-                stackDeep += token.text === "(" ? 1 : -1;
-            }
         }
         function buildAst() {
             if (token?.type === TokenType.ID_OBJ) {
@@ -659,6 +611,54 @@ class CtxexpParser {
             return obj;
         }
     }
+    execAst(ast, $ = this.ctx, defArgs = {}) {
+        const deepExecAst = (node, ctx) => {
+            if (!node || Object.keys(node).length === 0) {
+                return ctx;
+            }
+            if (node instanceof CallNode) {
+                const args = [];
+                for (let i = 0; i < node.args.length; i++) {
+                    const argNode = node.args[i];
+                    const res = deepExecAst(argNode, $);
+                    args.push(res);
+                }
+                let res = null;
+                if (node.name === "__DEFAULT__") {
+                    if (typeof ctx !== "function") {
+                        throw new Exception(node.col, `It's not a method`, ErrorCode.CALL);
+                    }
+                    res = ctx(...args);
+                }
+                else {
+                    if (ctx === undefined || typeof ctx[node.name] !== "function") {
+                        throw new Exception(node.col, `No method exists ${node.name}`, ErrorCode.CALL);
+                    }
+                    res = ctx[node.name](...args);
+                }
+                return deepExecAst(node.prop, res);
+            }
+            if (node instanceof AccessNode) {
+                if (node.name === "$") {
+                    const res = deepExecAst(node.prop, $);
+                    return res;
+                }
+                // if (ctx === undefined) {
+                //   throw new Exception(node.col, `ctx not undefined`, ErrorCode.READ);
+                // }
+                const res = deepExecAst(node.prop, defArgs?.[node.name] ?? ctx?.[node.name]);
+                return res;
+            }
+            if (node instanceof DataNode) {
+                return node.value;
+            }
+        };
+        return deepExecAst(ast, $);
+    }
+    exec(exp = this.exp) {
+        this.toTokens(exp);
+        return this.execAst(this.toAst(), this.ctx);
+    }
 }
 
-export { ErrorCode, Exception, CtxexpParser as default };
+export { CtxexpParser, ErrorCode, Exception, CtxexpParser as default };

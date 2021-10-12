@@ -1,6 +1,6 @@
 {
   "name": "ctxexp-parser",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "libs/ctxexp-parser.cjs.js",
   "module": "libs/ctxexp-parser.esm.js",
   "types": "./types/index.d.ts",
