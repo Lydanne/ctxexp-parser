@@ -1,5 +1,5 @@
 import { CtxexpParser } from "./core/CtxexpParser";
 
-export default CtxexpParser;
-
 export * from "./helper/Exception";
+
+export default CtxexpParser;
