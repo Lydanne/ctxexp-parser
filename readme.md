@@ -65,6 +65,10 @@ console.log(res2); // A
 
 [查看更多例子](https://github.com/WumaCoder/ctxexp-parser/blob/main/test/index.spec.ts)
 
+## State
+
+![state](./status.png)
+
 ## About
 
 MIT License
