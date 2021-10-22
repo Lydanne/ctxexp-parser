@@ -384,4 +384,17 @@ describe("CtxexpParser", () => {
 
     expect(new CtxexpParser(ctx, exp).exec()).toBe("A");
   });
+
+  it("read array in call fn", () => {
+    const exp = "$.fn($.arr[0],$.arr[0])";
+
+    const ctx = {
+      arr: [1],
+      fn(n1, n2) {
+        return [n1, n2];
+      },
+    };
+
+    expect(new CtxexpParser(ctx, exp).exec()).toEqual([1, 1]);
+  });
 });
