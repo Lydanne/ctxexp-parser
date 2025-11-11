@@ -9,14 +9,14 @@
     "lib": "libs",
     "test": "test"
   },
-  "author": "WumaCoder",
-  "homepage": "https://github.com/WumaCoder/ctxexp-parser#readme",
+  "author": "Lydanne",
+  "homepage": "https://github.com/Lydanne/ctxexp-parser#readme",
   "bugs": {
-    "url": "https://github.com/WumaCoder/ctxexp-parser/issues"
+    "url": "https://github.com/Lydanne/ctxexp-parser/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WumaCoder/ctxexp-parser.git"
+    "url": "git+https://github.com/Lydanne/ctxexp-parser.git"
   },
   "license": "MIT",
   "devDependencies": {
