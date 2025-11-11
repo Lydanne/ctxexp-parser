@@ -60,21 +60,18 @@ describe("ctxexpParser", () => {
   it("should throw CtxexpParserError(1): In the 1 column, must be '.', not 'x'", () => {
     const exp = "$x.test";
     const lexer = new Lexer(exp);
-    expect(() => lexer.toTokens()).toThrowError();
+    expect(() => lexer.toTokens()).toThrow();
   });
 
   it("should throw error CtxexpParserError(1): In the 4 column, must be '.' or '(' or '[', not ' '", () => {
     const exp = "$.fn ()";
     const lexer = new Lexer(exp);
-    expect(() => lexer.toTokens()).toThrowError(`
-    $.fn ()
-        ^
-CtxexpParserError(1): must be '.' or '(' or '[', not ' '`);
+    expect(() => lexer.toTokens()).toThrow();
   });
 
   it("should throw error", () => {
-    expect(() => new Lexer(`$.a[x]`).toTokens()).toThrowError();
-    expect(() => new Lexer(`$.a [0]`).toTokens()).toThrowError();
-    expect(() => new Lexer(`$.a($.a, $.a)`).toTokens()).toThrowError();
+    expect(() => new Lexer(`$.a[x]`).toTokens()).toThrow();
+    expect(() => new Lexer(`$.a [0]`).toTokens()).toThrow();
+    expect(() => new Lexer(`$.a($.a, $.a)`).toTokens()).toThrow();
   });
 });

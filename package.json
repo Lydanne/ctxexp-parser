@@ -3,7 +3,7 @@
   "version": "1.2.2",
   "main": "libs/ctxexp-parser.cjs.js",
   "module": "libs/ctxexp-parser.esm.js",
-  "types": "./types/index.d.ts",
+  "types": "./libs/index.d.ts",
   "description": "A parser that can execute JS in an environment that cannot execute JS dynamically.",
   "directories": {
     "lib": "libs",
@@ -19,23 +19,21 @@
     "url": "git+https://github.com/WumaCoder/ctxexp-parser.git"
   },
   "license": "MIT",
-  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.15.5",
     "@babel/preset-env": "^7.15.6",
-    "@rollup/plugin-node-resolve": "^13.0.5",
-    "@rollup/plugin-typescript": "^8.2.5",
-    "@types/jest": "^27.0.2",
-    "@types/node": "^16.9.6",
-    "babel-jest": "^27.2.1",
-    "jest": "^27.2.1",
-    "rollup": "^2.57.0",
-    "rollup-plugin-typescript2": "^0.30.0",
-    "rollup-plugin-uglify": "^6.0.4",
-    "ts-jest": "^27.0.5",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.0",
+    "babel-jest": "^30.2.0",
+    "jest": "^30.2.0",
+    "rollup": "^4.53.2",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.2.1",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.3"
+    "typescript": "^5.9.3"
   },
   "keywords": [
     "dynamic",

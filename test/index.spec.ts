@@ -7,7 +7,7 @@ describe("CtxexpParser", () => {
     const ctx = {
       foo: {
         boo: "love",
-        fn(str, str1) {
+        fn(str: string, str1: string) {
           return str + str1;
         },
       },
@@ -21,7 +21,7 @@ describe("CtxexpParser", () => {
     const ctx = {
       foo: {
         boo: "love",
-        fn(str, str1) {
+        fn(str: string, str1: string) {
           return str + str1;
         },
       },
@@ -38,13 +38,13 @@ describe("CtxexpParser", () => {
       },
     };
 
-    expect(() => new CtxexpParser(ctx, exp).exec()).toThrowError();
+    expect(() => new CtxexpParser(ctx, exp).exec()).toThrow();
   });
 
   it("should input fun base params", () => {
     const exp = `$.fn(1,"2")`;
     const ctx = {
-      fn(int, str) {
+      fn(int: number, str: string) {
         return int + str;
       },
     };
@@ -77,7 +77,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn($.a,$.a,$.a)`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2 + n3;
       },
     };
@@ -89,7 +89,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn($.a,"1",$.a)`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2 + n3;
       },
     };
@@ -101,7 +101,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn("1","1",$.a)`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2 + n3;
       },
     };
@@ -113,7 +113,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn(1,"1",$.a)`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2 + n3;
       },
     };
@@ -125,7 +125,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn(1,1,$.a)`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2 + n3;
       },
     };
@@ -137,7 +137,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn(1,1,1)`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2 + n3;
       },
     };
@@ -149,7 +149,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn("1","1","1")`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2 + n3;
       },
     };
@@ -161,7 +161,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn("1","1")`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2;
       },
     };
@@ -173,7 +173,7 @@ describe("CtxexpParser", () => {
     const exp = `$.fn("1",1)`;
     const ctx = {
       a: 1,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return n1 + n2;
       },
     };
@@ -184,7 +184,7 @@ describe("CtxexpParser", () => {
   it("should input any char", () => {
     const exp = '$.fn("1\\"1")';
     const ctx = {
-      fn(n1) {
+      fn(n1: any) {
         return n1;
       },
     };
@@ -196,7 +196,7 @@ describe("CtxexpParser", () => {
     const exp = '$.fn($.JSON.parse("{\\"test\\":2}"))';
     const ctx = {
       JSON,
-      fn(obj) {
+      fn(obj: any) {
         return obj.test;
       },
     };
@@ -222,9 +222,9 @@ describe("CtxexpParser", () => {
     const exp = "$.fn(1).fn(2)";
     const ctx = {
       JSON,
-      fn(n1) {
+      fn(n1: any) {
         return {
-          fn(n2) {
+          fn(n2: any) {
             return n1 + n2;
           },
         };
@@ -301,7 +301,7 @@ describe("CtxexpParser", () => {
     const exp1 = "$.fn(-1,+1,1.1)";
     const ctx = {
       JSON,
-      fn(n1, n2, n3) {
+      fn(n1: any, n2: any, n3: any) {
         return [n1, n2, n3];
       },
     };
@@ -317,7 +317,7 @@ describe("CtxexpParser", () => {
     const ctx = {
       True: () => true,
       False: () => false,
-      when(bool, trueCb, falseCb) {
+      when(bool: any, trueCb: any, falseCb: any) {
         if (bool) {
           return trueCb();
         } else {
@@ -334,10 +334,10 @@ describe("CtxexpParser", () => {
     const exp = `$.fn((s1,s2)=>$.concat(s1,s2,s2))`;
 
     const ctx = {
-      fn(cb) {
+      fn(cb: any) {
         return cb("hello", "Ctxexp");
       },
-      concat(s1, s2, s3) {
+      concat(s1: any, s2: any, s3: any) {
         return s1 + s2 + s3;
       },
     };
@@ -349,9 +349,9 @@ describe("CtxexpParser", () => {
     const exp = `$.For(0,10,1).each((i)=>i).join(",")`;
 
     const ctx = {
-      For(init, last, step) {
+      For(init: any, last: any, step: any) {
         return {
-          each(cb) {
+          each(cb: any) {
             const res = [];
             for (let i = init; i < last; i += step) {
               res.push(cb(i));
@@ -374,10 +374,10 @@ describe("CtxexpParser", () => {
           return ["A"];
         },
       },
-      runs(...cbs) {
+      runs(...cbs: any[]) {
         return cbs.map((cb, index) => cb(index));
       },
-      Type(i) {
+      Type(i: any) {
         return ["A", "D", "C"][i];
       },
     };
@@ -390,7 +390,7 @@ describe("CtxexpParser", () => {
 
     const ctx = {
       arr: [1],
-      fn(n1, n2) {
+      fn(n1: any, n2: any) {
         return [n1, n2];
       },
     };

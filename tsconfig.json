@@ -14,8 +14,7 @@
     },
 
     "declaration": true, // 生成定义文件
-    "declarationMap": true, // 生成定义sourceMap
-    "declarationDir": "./types" // 定义文件输出目录
+    "declarationMap": true // 生成定义sourceMap
   },
   "exclude": ["**/test"],
   "include": ["src/**/*.ts", "src/**/*.d.ts"]
